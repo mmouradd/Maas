@@ -1,0 +1,272 @@
+{
+  "info": {
+    "name": "MAAS Backend — GSRM",
+    "description": "Collection de test de l'API REST de gestion des services MAAS. 1) Lancer 'Login admin', le token est enregistré automatiquement. 2) Créer une agence puis un utilisateur agence. 3) Se reconnecter avec le compte agence pour créer une demande.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Authentification",
+      "item": [
+        {
+          "name": "Login admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) { pm.collectionVariables.set('token', json.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@gsrm.local\",\n  \"motDePasse\": \"ChangeMe123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Mon profil (me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Administration",
+      "item": [
+        {
+          "name": "Créer une agence",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/admin/agences",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomAgence\": \"Voyages Horizon\",\n  \"codeAgence\": \"AG-001\",\n  \"emailContact\": \"contact@horizon.example\",\n  \"telephone\": \"+216 71 000 000\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Créer un utilisateur agence",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/admin/utilisateurs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Ben Ali\",\n  \"prenom\": \"Sami\",\n  \"email\": \"agence@horizon.example\",\n  \"motDePasse\": \"Agence123!\",\n  \"role\": \"AGENCE\",\n  \"idAgence\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Créer un utilisateur escale (FRA)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/admin/utilisateurs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Muller\",\n  \"prenom\": \"Anna\",\n  \"email\": \"escale.fra@gsrm.local\",\n  \"motDePasse\": \"Escale123!\",\n  \"role\": \"ESCALE\",\n  \"idEscale\": 3\n}"
+            }
+          }
+        },
+        {
+          "name": "Lister les utilisateurs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/admin/utilisateurs"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Référentiels",
+      "item": [
+        {
+          "name": "Liste des escales",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/escales"
+          }
+        },
+        {
+          "name": "Liste des agences",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/agences"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Demandes MAAS",
+      "item": [
+        {
+          "name": "Créer une demande",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/demandes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idEscale\": 3,\n  \"idAgence\": 1,\n  \"typeService\": \"ARRIVAL\",\n  \"dateService\": \"2026-08-15\",\n  \"heureService\": \"10:30:00\",\n  \"nombrePassagers\": 2,\n  \"coutService\": 120.00,\n  \"fraisAdditionnels\": 30.50,\n  \"nomGreeter\": \"Karim T.\",\n  \"passagers\": [\n    { \"nom\": \"Dupont\", \"prenom\": \"Marie\", \"numeroVol\": \"AF1234\", \"numeroDocument\": \"P123456\" },\n    { \"nom\": \"Dupont\", \"prenom\": \"Jean\", \"numeroVol\": \"AF1234\" }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Lister / filtrer les demandes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/demandes?statut=NOTIFIEE&idEscale=3",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "demandes"],
+              "query": [
+                { "key": "statut", "value": "NOTIFIEE" },
+                { "key": "idEscale", "value": "3" },
+                { "key": "typeService", "value": "ARRIVAL", "disabled": true },
+                { "key": "dateDebut", "value": "2026-08-01", "disabled": true },
+                { "key": "dateFin", "value": "2026-08-31", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Détail d'une demande",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/demandes/1"
+          }
+        },
+        {
+          "name": "Historique des statuts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/demandes/1/historique"
+          }
+        },
+        {
+          "name": "Confirmer la demande",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/demandes/1/statut",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nouveauStatut\": \"CONFIRMEE\",\n  \"commentaire\": \"Greeter affecté\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refuser la demande (motif obligatoire)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/demandes/1/statut",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nouveauStatut\": \"REFUSEE\",\n  \"motif\": \"Aucun greeter disponible à cette date\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Notifications",
+      "item": [
+        {
+          "name": "Mes notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/notifications?nonLues=true"
+          }
+        },
+        {
+          "name": "Compteur non lues",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/notifications/count"
+          }
+        },
+        {
+          "name": "Marquer comme lue",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/notifications/1/lu"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Gestionnaire GSRM",
+      "item": [
+        {
+          "name": "Dashboard — statistiques",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/dashboard/stats"
+          }
+        },
+        {
+          "name": "Export Excel",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/export/demandes/excel"
+          }
+        },
+        {
+          "name": "Export PDF",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/export/demandes/pdf"
+          }
+        }
+      ]
+    }
+  ]
+}
