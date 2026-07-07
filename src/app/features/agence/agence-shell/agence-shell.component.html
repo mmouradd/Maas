@@ -1,0 +1,27 @@
+<div class="shell">
+  <nav class="sidebar">
+    <div class="sidebar-logo">✈️ MAAS</div>
+    <div class="sidebar-role">Espace Agence</div>
+    <ul>
+      <li><a routerLink="dashboard" routerLinkActive="active">🏠 Tableau de bord</a></li>
+      <li><a routerLink="nouvelle-demande" routerLinkActive="active">➕ Nouvelle demande</a></li>
+      <li><a routerLink="historique" routerLinkActive="active">📋 Historique</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <div class="user-info">{{ user()?.prenom }} {{ user()?.nom }}</div>
+      <button (click)="logout()">Déconnexion</button>
+    </div>
+  </nav>
+
+  <main class="content">
+    <header class="topbar">
+      <span class="topbar-agency">{{ user()?.agenceId ? 'Agence #' + user()?.agenceId : '' }}</span>
+      @if (unread() > 0) {
+        <span class="notif-badge">{{ unread() }} notification(s)</span>
+      }
+    </header>
+    <div class="page-content">
+      <router-outlet />
+    </div>
+  </main>
+</div>

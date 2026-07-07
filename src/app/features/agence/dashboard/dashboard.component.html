@@ -1,0 +1,58 @@
+<h2 class="page-title">Tableau de bord</h2>
+
+@if (loading()) {
+  <p class="loading">Chargement...</p>
+} @else {
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-value">{{ demandes().length }}</div>
+      <div class="stat-label">Demandes totales</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ demandes() | byStatut:'EN_COURS' }}</div>
+      <div class="stat-label">En cours</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ demandes() | byStatut:'TRAITEE' }}</div>
+      <div class="stat-label">Traitées</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <h3>Dernières demandes</h3>
+      <a routerLink="../nouvelle-demande" class="btn-primary">+ Nouvelle demande</a>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Référence</th>
+          <th>Type</th>
+          <th>Escale</th>
+          <th>Date service</th>
+          <th>Statut</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (d of demandes(); track d.id) {
+          <tr>
+            <td class="mono">{{ d.reference }}</td>
+            <td>{{ d.typeService }}</td>
+            <td>{{ d.escaleCode }}</td>
+            <td>{{ d.dateService | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="statut-badge" [style.background]="STATUT_COLORS[d.statut]">
+                {{ STATUT_LABELS[d.statut] }}
+              </span>
+            </td>
+            <td><a [routerLink]="'../demande/' + d.id">Voir →</a></td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" style="text-align:center; color:#999;">Aucune demande</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

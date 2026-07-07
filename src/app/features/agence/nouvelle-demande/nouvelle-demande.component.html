@@ -1,0 +1,86 @@
+<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">Nouvelle demande MAAS</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()" style="max-width:700px">
+  <div style="background:#fff;border-radius:10px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:16px">
+    <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">Informations générales</h3>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">Type de service *</label>
+        <select formControlName="typeService" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px">
+          <option value="ARRIVAL">Arrival</option>
+          <option value="DEPARTURE">Departure</option>
+          <option value="TRANSIT">Transit</option>
+        </select>
+      </div>
+
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">Escale *</label>
+        <select formControlName="escaleId" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px">
+          <option [value]="null">-- Choisir --</option>
+          @for (e of ESCALES; track e.id) {
+            <option [value]="e.id">{{ e.code }} — {{ e.nom }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">Date & heure du service *</label>
+        <input type="datetime-local" formControlName="dateService" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box" />
+      </div>
+
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">Nom du Greeter</label>
+        <input type="text" formControlName="nomGreeter" placeholder="Nom du Greeter" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box" />
+      </div>
+
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">Coût du service (€) *</label>
+        <input type="number" formControlName="coutService" min="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box" />
+      </div>
+
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px">Frais additionnels (€)</label>
+        <input type="number" formControlName="fraisAdditionnels" min="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box" />
+      </div>
+    </div>
+
+    <div style="margin-top:12px;padding:12px;background:#f0f4ff;border-radius:8px;font-size:14px">
+      <strong>Coût total : {{ coutTotal | currency:'EUR' }}</strong>
+    </div>
+  </div>
+
+  <!-- Passagers -->
+  <div style="background:#fff;border-radius:10px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:16px" formArrayName="passagers">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="font-size:14px;font-weight:700">Passagers ({{ passagers.length }})</h3>
+      <button type="button" (click)="addPassager()" style="padding:6px 14px;background:#f0f4ff;border:1px solid #c0d0f5;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;color:#4C8BF5">+ Ajouter</button>
+    </div>
+
+    @for (pax of passagers.controls; track $index) {
+      <div [formGroupName]="$index" style="border:1px solid #eee;border-radius:8px;padding:16px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+          <strong style="font-size:13px">Passager {{ $index + 1 }}</strong>
+          @if (passagers.length > 1) {
+            <button type="button" (click)="removePassager($index)" style="color:#e53935;background:none;border:none;cursor:pointer;font-size:12px">✕ Supprimer</button>
+          }
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <input formControlName="nom"       placeholder="Nom *"         style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px" />
+          <input formControlName="prenom"    placeholder="Prénom *"      style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px" />
+          <input formControlName="numeroVol" placeholder="N° Vol *"      style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px" />
+          <input formControlName="dateVol"   type="date" placeholder="Date vol *" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px" />
+          <input formControlName="nationalite" placeholder="Nationalité" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px" />
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (error()) {
+    <div style="background:#fff0f0;border:1px solid #ffcccc;color:#c0392b;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px">{{ error() }}</div>
+  }
+
+  <button type="submit" [disabled]="form.invalid || loading()" style="padding:12px 32px;background:#4C8BF5;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer">
+    {{ loading() ? 'Envoi en cours...' : 'Envoyer la demande' }}
+  </button>
+</form>

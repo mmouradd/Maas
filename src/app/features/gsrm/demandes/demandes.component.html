@@ -1,0 +1,51 @@
+<h2 class="page-title">Toutes les demandes</h2>
+
+<div class="filters">
+  <select [(ngModel)]="filtres.escaleId" (change)="load()">
+    <option [value]="undefined">Toutes les escales</option>
+    @for (e of ESCALES; track e.id) {
+      <option [value]="e.id">{{ e.code }} — {{ e.nom }}</option>
+    }
+  </select>
+
+  <select [(ngModel)]="filtres.statut" (change)="load()">
+    <option [value]="undefined">Tous les statuts</option>
+    @for (s of (STATUT_LABELS | keyvalue); track s.key) {
+      <option [value]="s.key">{{ s.value }}</option>
+    }
+  </select>
+
+  <input type="date" [(ngModel)]="filtres.dateDebut" (change)="load()" placeholder="Du" />
+  <input type="date" [(ngModel)]="filtres.dateFin"   (change)="load()" placeholder="Au" />
+
+  <button (click)="exportExcel()">📥 Export Excel</button>
+</div>
+
+@if (loading()) { <p>Chargement...</p> }
+@else {
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Référence</th><th>Agence</th><th>Type</th><th>Escale</th>
+        <th>Date service</th><th>Passagers</th><th>Coût total</th><th>Statut</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (d of demandes(); track d.id) {
+        <tr>
+          <td class="mono">{{ d.reference }}</td>
+          <td>{{ d.agenceNom }}</td>
+          <td>{{ d.typeService }}</td>
+          <td>{{ d.escaleCode }}</td>
+          <td>{{ d.dateService | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ d.nombrePassagers }}</td>
+          <td>{{ d.coutTotal | currency:'EUR' }}</td>
+          <td><span class="badge" [style.background]="STATUT_COLORS[d.statut]">{{ STATUT_LABELS[d.statut] }}</span></td>
+          <td><a [routerLink]="'../demande/' + d.id">Voir →</a></td>
+        </tr>
+      } @empty {
+        <tr><td colspan="9" style="text-align:center;color:#999;padding:24px">Aucune demande</td></tr>
+      }
+    </tbody>
+  </table>
+}
